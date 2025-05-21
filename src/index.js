@@ -1,62 +1,277 @@
 class Node {
-  constructor(data, left, right) {
+  constructor(data) {
     this.data = data;
-    this.left = left;
-    this.right = right;
+    this.left = null;
+    this.right = null;
   }
 
-  //   loopNodes = function () {
-  //     console.log(this.data);
-  //     if (this.left !== null) {
-  //       this.left.loopNodes();
-  //     }
-  //     if (this.right !== null) {
-  //       this.right.loopNodes();
-  //     }
-  //   };
-
-  insertNode = function (value) {
+  insert = function (value) {
     if (value == this.data) {
       return;
     }
-    if (this.left == null) {
-      this.left = new Node(value);
-      return this.left;
+    if (value > this.data) {
+      if (this.right == null) {
+        this.right = new Node(value);
+        return;
+      }
+      this.right.insert(value);
+      return;
     }
     if (value < this.data) {
-      this.left.insertNode(value);
+      if (this.left == null) {
+        this.left = new Node(value);
+        return;
+      }
+      this.left.insert(value);
+      return;
+    }
+  };
+
+  remove = function (value) {
+    if (this.left !== null && this.left.data == value) {
+      if (this.left.left == null && this.left.right == null) {
+        this.left = null;
+        return;
+      }
+      if (this.left.left == null || this.left.right == null) {
+        if (this.left.left !== null) {
+          this.left = this.left.left;
+          return;
+        } else {
+          this.left = this.left.right;
+          return;
+        }
+      }
+      if (this.left.left !== null && this.left.right !== null) {
+        let parent = this.left;
+        let tmp = this.left.right;
+        while (tmp.left !== null) {
+          parent = tmp;
+          tmp = tmp.left;
+        }
+        this.left.data = tmp.data;
+        parent.remove(tmp.data);
+
+        return;
+      }
+    }
+    if (this.right !== null && this.right.data == value) {
+      if (this.right.left == null && this.right.right == null) {
+        this.right = null;
+        return;
+      }
+      if (this.right.left == null || this.right.right == null) {
+        if (this.right.left !== null) {
+          this.right = this.right.left;
+          return;
+        } else {
+          this.right = this.right.right;
+          return;
+        }
+      }
+      if (this.right.left !== null && this.right.right !== null) {
+        let parent = this.right;
+        let tmp = this.right.right;
+        while (tmp.left !== null) {
+          parent = tmp;
+          tmp = tmp.left;
+        }
+        this.right.data = tmp.data;
+        parent.remove(tmp.data);
+        return;
+      }
     }
     if (value > this.data) {
-      this.right.insertNode(value);
+      if (this.right == null) {
+        return console.log(`${value} not found.`);
+      }
+      this.right.remove(value);
+      return;
     }
-    // if (value > this.data && this.right !== null) {
-    //   this.right.insertNode(value);
-    //   console.log(3);
-    //   return;
-    // }
+    if (value < this.data) {
+      if (this.left == null) {
+        return console.log(`${value} not found.`);
+      }
+      this.left.remove(value);
+      return;
+    }
+    if (value == this.data) {
+      let tmp = this.right;
+      while (tmp.left !== null) {
+        tmp = tmp.left;
+      }
+      this.remove(tmp.data);
+      this.data = tmp.data;
+      return;
+    }
+  };
+
+  find = function (value) {
+    if (value == this.data) {
+      return this;
+    }
+    if (value < this.data) {
+      if (this.left == null) {
+        return console.log(`${value} not found.`);
+      }
+      return this.left.find(value);
+    }
+    if (value > this.data) {
+      if (this.right == null) {
+        return console.log(`${value} not found.`);
+      }
+      return this.right.find(value);
+    }
+  };
+
+  levelOrder = function (callback) {
+    if (callback == undefined || callback == null) {
+      return alert("Please provide a callback");
+    }
+    let queue = [];
+    queue.push(this);
+    while (queue.length > 0) {
+      callback(queue[0]);
+      if (queue[0].left !== null) {
+        queue.push(queue[0].left);
+      }
+      if (queue[0].right !== null) {
+        queue.push(queue[0].right);
+      }
+      queue.shift();
+    }
+  };
+
+  preOrder = function (callback) {
+    if (callback == undefined || callback == null) {
+      return alert("Please provide a callback");
+    }
+    callback(this);
+    if (this.left !== null) {
+      this.left.preOrder(callback);
+    }
+    if (this.right !== null) {
+      this.right.preOrder(callback);
+    }
+  };
+
+  inOrder = function (callback) {
+    if (callback == undefined || callback == null) {
+      return alert("Please provide a callback");
+    }
+    if (this.left !== null) {
+      this.left.inOrder(callback);
+    }
+    callback(this);
+    if (this.right !== null) {
+      this.right.inOrder(callback);
+    }
+  };
+
+  postOrder = function (callback) {
+    if (callback == undefined || callback == null) {
+      return alert("Please provide a callback");
+    }
+    if (this.left !== null) {
+      this.left.postOrder(callback);
+    }
+    if (this.right !== null) {
+      this.right.postOrder(callback);
+    }
+    callback(this);
+  };
+
+  height = function (value, x, y) {
+    let tmp;
+    if (typeof value === "number") {
+      tmp = this.find(value);
+      if (tmp == undefined) {
+        return null;
+      }
+    } else {
+      tmp = value;
+    }
+
+    if (tmp.left == null && tmp.right == null) {
+      return 1;
+    }
+    if (tmp.left !== null || tmp.right !== null) {
+      if (tmp.left !== null) {
+        x = tmp.left.height(tmp.left.data) + 1;
+      } else if (x == undefined) {
+        x = 0;
+      }
+      if (tmp.right !== null) {
+        y = tmp.right.height(tmp.right.data) + 1;
+      } else if (y == undefined) {
+        y = 0;
+      }
+      if (y > x) {
+        return y;
+      } else {
+        return x;
+      }
+    }
+  };
+
+  depth = function (value) {
+    if (value == this.data) {
+      return 0;
+    }
+    if (value < this.data) {
+      let x = 1 + this.left.depth(value);
+      return x;
+    }
+    if (value > this.data) {
+      let x = 1 + this.right.depth(value);
+      return x;
+    }
+    return null;
+  };
+
+  isBalanced = function () {
+    let x;
+    let y;
+    if (this.left !== null && this.right !== null) {
+      x = this.right.height(this.right);
+      y = this.left.height(this.left);
+      if (x - y > 1 || y - x > 1) {
+        return false;
+      } else {
+        this.left.isBalanced();
+        if (this.left.isBalanced() == false) {
+          return console.log(this.data, "Unbalanced");
+        } else {
+          this.right.isBalanced();
+          if (this.right.isBalanced() == false) {
+            return console.log(this.data, "Unbalanced");
+          }
+        }
+      }
+      console.log(this.data, "balanced");
+    }
+    if (this.left == null || this.right == null) {
+      if (this.left !== null) {
+        y = this.left.height(this.left);
+        x = 0;
+      }
+      if (this.right !== null) {
+        x = this.right.height(this.right);
+        y = 0;
+      }
+      if (x - y > 1 || y - x > 1) {
+        return false;
+      } else {
+        return true;
+      }
+    }
   };
 }
 
 class Tree {
-  constructor(array) {
-    this.root = buildTree(array);
+  constructor(array, start, end, loop) {
+    this.root = buildTree(array, start, end, loop);
   }
-
-  //   loopTree = function () {
-  //     console.log(this.root.data);
-  //     this.root.left.loopNodes();
-  //     this.root.right.loopNodes();
-  //   };
-  insert = function (value) {
-    if (value == this.root.data) {
-      return;
-    }
-    if (value < this.root.data) {
-      this.root.left.insertNode(value);
-    } else {
-      this.root.right.insertNode(value);
-    }
-  };
 }
 
 mergeSort = function (array, left, right) {
@@ -124,8 +339,11 @@ remove = function (array) {
 };
 
 buildTree = function (array, start, end, loop) {
-  if (loop !== true) {
-    remove(array);
+  if (start > end) {
+    return null;
+  }
+  if (loop == undefined) {
+    array = remove(array);
     loop = true;
   }
   if (start == undefined) {
@@ -134,16 +352,43 @@ buildTree = function (array, start, end, loop) {
   if (end == undefined) {
     end = array.length - 1;
   }
-  if (start > end) return null;
-  let mid = Math.floor((start + end) / 2);
-  let treenode = new Node(array[mid]);
-  treenode.left = buildTree(array, start, mid - 1, loop);
-  treenode.right = buildTree(array, mid + 1, end, loop);
-  return treenode;
+  let mid = start + Math.floor((end - start) / 2);
+  let root = new Node(array[mid]);
+  root.left = buildTree(array, start, mid - 1, loop);
+  root.right = buildTree(array, mid + 1, end, loop);
+  return root;
 };
 
-let test = new Tree([1, 7, 4, 23, 8, 9, 4, 9, 3, 5, 7, 9, 67, 6345, 324]);
-
-test.insert(6);
+let test = new Tree([
+  1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324, 400, 10, 11, 12, 44, 45, 66,
+  2, 500, 600, 700, 800,
+]);
 
 console.log(test);
+
+const prettyPrint = (node, prefix = "", isLeft = true) => {
+  if (node === null) {
+    return;
+  }
+  if (node.right !== null) {
+    prettyPrint(node.right, `${prefix}${isLeft ? "│   " : "    "}`, false);
+  }
+  console.log(`${prefix}${isLeft ? "└── " : "┌── "}${node.data}`);
+  if (node.left !== null) {
+    prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
+  }
+};
+
+function lognode(node) {
+  console.log(node.data);
+}
+
+// test.root.insert(7000);
+// test.root.insert(8000);
+// test.root.insert(19);
+// test.root.insert(20);
+// test.root.insert(22);
+
+prettyPrint(test.root);
+
+test.root.isBalanced();
