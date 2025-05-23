@@ -229,26 +229,31 @@ class Node {
     return null;
   };
 
-  isBalanced = function () {
+  isBalanced = function (tmpheight) {
     let x;
     let y;
+    if (tmpheight == undefined) {
+      tmpheight = this.height(this.data);
+    }
+    let balance;
     if (this.left !== null && this.right !== null) {
       x = this.right.height(this.right);
       y = this.left.height(this.left);
       if (x - y > 1 || y - x > 1) {
+        console.log("Unbalanced");
         return false;
       } else {
-        this.left.isBalanced();
-        if (this.left.isBalanced() == false) {
-          return console.log(this.data, "Unbalanced");
+        this.left.isBalanced(tmpheight);
+        if (this.left.isBalanced(tmpheight) == false) {
+          return console.log("Unbalanced");
         } else {
-          this.right.isBalanced();
-          if (this.right.isBalanced() == false) {
-            return console.log(this.data, "Unbalanced");
+          this.right.isBalanced(tmpheight);
+          if (this.right.isBalanced(tmpheight) == false) {
+            return console.log("Unbalanced");
           }
+          balance = true;
         }
       }
-      console.log(this.data, "balanced");
     }
     if (this.left == null || this.right == null) {
       if (this.left !== null) {
@@ -260,11 +265,37 @@ class Node {
         y = 0;
       }
       if (x - y > 1 || y - x > 1) {
-        return false;
+        return (balance = false);
       } else {
-        return true;
+        return (balance = true);
       }
     }
+
+    if (this.height(this.data) == tmpheight && balance == true) {
+      console.log("Balanced");
+    }
+  };
+
+  rebalance = function () {
+    let array = [];
+    let queue = [];
+    queue.push(this);
+    while (queue.length > 0) {
+      array.push(queue[0].data);
+      if (queue[0].left !== null) {
+        queue.push(queue[0].left);
+      }
+      if (queue[0].right !== null) {
+        queue.push(queue[0].right);
+      }
+      queue.shift();
+    }
+    this.right = null;
+    this.left = null;
+    let mid = 0 + Math.floor((array.length - 1 - 0) / 2);
+    this.data = array[mid];
+    this.left = buildTree(array, 0, mid - 1, true);
+    this.right = buildTree(array, mid + 1, array.length - 1, true);
   };
 }
 
@@ -359,13 +390,6 @@ buildTree = function (array, start, end, loop) {
   return root;
 };
 
-let test = new Tree([
-  1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324, 400, 10, 11, 12, 44, 45, 66,
-  2, 500, 600, 700, 800,
-]);
-
-console.log(test);
-
 const prettyPrint = (node, prefix = "", isLeft = true) => {
   if (node === null) {
     return;
@@ -383,12 +407,35 @@ function lognode(node) {
   console.log(node.data);
 }
 
-// test.root.insert(7000);
-// test.root.insert(8000);
-// test.root.insert(19);
-// test.root.insert(20);
-// test.root.insert(22);
+newarray = function () {
+  let array = [];
+  while (array.length < 15) {
+    array.push(Math.floor(Math.random() * 100));
+  }
+  return array;
+};
 
-prettyPrint(test.root);
+let newtest = newarray();
 
-test.root.isBalanced();
+let newtree = new Tree(newtest);
+
+prettyPrint(newtree.root);
+
+newtree.root.isBalanced();
+
+newtree.root.insert(200);
+newtree.root.insert(300);
+newtree.root.insert(400);
+newtree.root.insert(250);
+newtree.root.insert(220);
+newtree.root.insert(350);
+newtree.root.insert(325);
+newtree.root.insert(201);
+
+newtree.root.isBalanced();
+
+newtree.root.rebalance();
+
+prettyPrint(newtree.root);
+
+newtree.root.isBalanced();
